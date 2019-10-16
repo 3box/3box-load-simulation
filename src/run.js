@@ -1,10 +1,11 @@
 const jsonrpc = require('jsonrpc-lite')
 const axios = require('axios')
 
-const testService1 = 'http://localhost:8011'
+const testService1 = 'http://18.213.113.225:8011/'
 const openRate = 500
 const opRate = 200
 
+// refactor, export as seperate module
 const createBox = async (id, testService) => {
   // call create box, await for sync and ready
   const requestObj = jsonrpc.request(id, 'openBox')
@@ -27,49 +28,30 @@ const createBox = async (id, testService) => {
   }
 }
 
+// refactor, export as test utitility functions
+// Returns a promise that resolves, once all boxes open
 const createBoxes = async (from, to, testService) => {
-  const boxes = []
+  const boxPromises = []
   for (let i = from; i < to; i++) {
+    boxPromises.push(createBox(i, testService))
     await new Promise(resolve => setTimeout(resolve, openRate))
-    console.log('createBox ' + i)
-    const box = await createBox(i, testService)
-    boxes.push(box)
   }
-  return boxes
+  return Promise.all(boxPromises)
 }
 
+// Returns a promise that resolves once all set resolve, also don't need to wait for resolve
 const publicSetBoxes = async (key, val, boxes) => {
+  const setPromises = []
   for (let i = 0; i < boxes.length; i++) {
     const box = boxes[i]
-    box.public.set(key, val) // don't await response
-    await new Promise(resolve => setTimeout(resolve, 5000))
+    setPromises.push(box.public.set(key, val))
+    await new Promise(resolve => setTimeout(resolve, opRate))
   }
-  return
+  return Promise.all(setPromises)
 }
 
 (async () => {
   // Create boxes
-  // const boxes = await createBoxes(1, 25, testService1)
-  // await new Promise(resolve => setTimeout(resolve, 5000))
-  // await publicSetBoxes('1', '1', boxes)
-  // console.log('done')
-  // const box = await createBox(1, testService1)
-  // await box.public.set('f', 'g')
-  // const val = await box.public.get('f')
-  // console.log(val)
-  //
-  // const box2 = await createBox(2, testService1)
-  // await box2.public.set('f', 'g')
-  // const val2 = await box2.public.get('f')
-  // console.log(val2)
-
-  for (let i = 0; i < 25; i++) {
-    console.log(i)
-    const box = await createBox(i, testService1)
-      console.log(i)
-    await box.public.set('1', '1')
-    const val = await box.public.get('1')
-  }
-
-  // console.log(box)
+  const boxes = await createBoxes(2000, 2100, testService1)
+  console.log('done')
 })()
