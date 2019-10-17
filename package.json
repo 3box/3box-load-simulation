@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:web": "./node_modules/.bin/webpack --config src/web/webpack.config.js --mode=development",
+    "build:web": "./node_modules/.bin/webpack --config src/web/webpack.config.js",
     "start:web": "node src/web/server.js | npm run build:web",
-    "start": "npm run start:web | npm run ganache | node src/testService.js",
+    "start": "npm run build:web && node src/web/server.js | npm run ganache | node src/testService.js",
     "ganache": "./node_modules/.bin/ganache-cli"
   },
   "author": "",
