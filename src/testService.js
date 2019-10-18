@@ -5,7 +5,6 @@ const path = require('path')
 const jsonrpc = require('jsonrpc-lite')
 const port = 8011
 
-
 const startExpress = (page) => {
    const app = express()
    app.use(express.json())
@@ -14,9 +13,11 @@ const startExpress = (page) => {
       next()
     })
    app.post('/', handler(page))
-   app.listen(port, () => {
+   const server = app.listen(port, () => {
     console.log('rpc service running ')
    })
+   console.log(server.timeout)
+   server.timeout = 120000 * 5;
 }
 
 const handler = (page) => async (req, res, next) => {

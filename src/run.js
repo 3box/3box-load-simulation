@@ -1,8 +1,10 @@
 const jsonrpc = require('jsonrpc-lite')
 const axios = require('axios')
 
-const testService1 = 'http://18.213.113.225:8011/'
-const openRate = 500
+const testService1 = 'http://52.3.224.220:8011/'
+const testService2 = 'http://3.210.200.141:8011/'
+
+const openRate = 750
 const opRate = 200
 
 // refactor, export as seperate module
@@ -11,12 +13,14 @@ const createBox = async (id, testService) => {
   const requestObj = jsonrpc.request(id, 'openBox')
   const res = await axios.post(testService, requestObj)
   if (res.data.result !== 'OK') throw new Error('Box Not Created')
+  console.log('Box Open: ' + id)
 
   return {
     public: {
       set: async (key, val) => {
         const requestObj = jsonrpc.request(id, 'public.set', {key, val})
         const res = await axios.post(testService, requestObj)
+        console.log('set: ' + id + " : " + res.data.result)
         return res.data.result
       },
       get: async (key) => {
@@ -52,6 +56,13 @@ const publicSetBoxes = async (key, val, boxes) => {
 
 (async () => {
   // Create boxes
-  const boxes = await createBoxes(2000, 2100, testService1)
-  console.log('done')
+  let boxes = []
+  const res = await Promise.all([createBoxes(3000, 3075, testService1), createBoxes(3075, 3150, testService2)])
+  console.log('boxes open')
+  boxes = boxes.concat(res[0], res[1])
+  for (let i = 0; i < 1; i++) {
+    await publicSetBoxes(i, i, boxes)
+    console.log('set vals: ' + i)
+  }
+  console.log('set done')
 })()
